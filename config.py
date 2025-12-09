@@ -15,10 +15,11 @@ import os
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
-from dotenv import load_dotenv
+
+# from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv()
+# load_dotenv()
 
 # ============================================================================
 # PROMPT TEMPLATES - These are the prompts used to build the system prompt.
@@ -160,37 +161,70 @@ Generate concise, actionable incorporation instructions based on this analysis.
 @dataclass
 class APIConfig:
     """API and LLM configuration settings."""
+
     # OpenAI Configuration
     OPENAI_API_KEY: str = field(default_factory=lambda: os.getenv("OPENAI_API_KEY", ""))
-    OPENAI_MODEL: str = field(default_factory=lambda: os.getenv("OPENAI_MODEL", "gpt-5"))
-    OPENAI_CONTEXT_WINDOW: int = field(default_factory=lambda: int(os.getenv("OPENAI_CONTEXT_WINDOW", "400000")))  # GPT-5: 400k total
-    OPENAI_MAX_OUTPUT: int = field(default_factory=lambda: int(os.getenv("OPENAI_MAX_OUTPUT", "128000")))  # GPT-5: 128k output
+    OPENAI_MODEL: str = field(
+        default_factory=lambda: os.getenv("OPENAI_MODEL", "gpt-5")
+    )
+    OPENAI_CONTEXT_WINDOW: int = field(
+        default_factory=lambda: int(os.getenv("OPENAI_CONTEXT_WINDOW", "400000"))
+    )  # GPT-5: 400k total
+    OPENAI_MAX_OUTPUT: int = field(
+        default_factory=lambda: int(os.getenv("OPENAI_MAX_OUTPUT", "128000"))
+    )  # GPT-5: 128k output
 
     # xAI Configuration
     XAI_API_KEY: str = field(default_factory=lambda: os.getenv("XAI_API_KEY", ""))
     XAI_BASE_URL: str = "https://api.x.ai/v1"
-    XAI_MODEL: str = field(default_factory=lambda: os.getenv("XAI_MODEL", "grok-4-fast"))
-    XAI_CONTEXT_WINDOW: int = field(default_factory=lambda: int(os.getenv("XAI_CONTEXT_WINDOW", "2000000")))  # Grok-4-fast: 2m total
-    XAI_MAX_OUTPUT: int = field(default_factory=lambda: int(os.getenv("XAI_MAX_OUTPUT", "30000")))  # Grok-4-fast: 30k output
+    XAI_MODEL: str = field(
+        default_factory=lambda: os.getenv("XAI_MODEL", "grok-4-fast")
+    )
+    XAI_CONTEXT_WINDOW: int = field(
+        default_factory=lambda: int(os.getenv("XAI_CONTEXT_WINDOW", "2000000"))
+    )  # Grok-4-fast: 2m total
+    XAI_MAX_OUTPUT: int = field(
+        default_factory=lambda: int(os.getenv("XAI_MAX_OUTPUT", "30000"))
+    )  # Grok-4-fast: 30k output
 
     # Anthropic Configuration
-    ANTHROPIC_API_KEY: str = field(default_factory=lambda: os.getenv("ANTHROPIC_API_KEY", ""))
-    ANTHROPIC_MODEL: str = field(default_factory=lambda: os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-5-20250929"))
-    ANTHROPIC_CONTEXT_WINDOW: int = field(default_factory=lambda: int(os.getenv("ANTHROPIC_CONTEXT_WINDOW", "200000")))  # Claude-4.5: 200k total
-    ANTHROPIC_MAX_OUTPUT: int = field(default_factory=lambda: int(os.getenv("ANTHROPIC_MAX_OUTPUT", "64000")))  # Claude-4.5: 64k output
+    ANTHROPIC_API_KEY: str = field(
+        default_factory=lambda: os.getenv("ANTHROPIC_API_KEY", "")
+    )
+    ANTHROPIC_MODEL: str = field(
+        default_factory=lambda: os.getenv(
+            "ANTHROPIC_MODEL", "claude-sonnet-4-5-20250929"
+        )
+    )
+    ANTHROPIC_CONTEXT_WINDOW: int = field(
+        default_factory=lambda: int(os.getenv("ANTHROPIC_CONTEXT_WINDOW", "200000"))
+    )  # Claude-4.5: 200k total
+    ANTHROPIC_MAX_OUTPUT: int = field(
+        default_factory=lambda: int(os.getenv("ANTHROPIC_MAX_OUTPUT", "64000"))
+    )  # Claude-4.5: 64k output
 
     # Open Web UI / Songbird Configuration
-    OPEN_WEBUI_API_KEY: str = field(default_factory=lambda: os.getenv("OPEN_WEBUI_API_KEY", ""))
+    OPEN_WEBUI_API_KEY: str = field(
+        default_factory=lambda: os.getenv("OPEN_WEBUI_API_KEY", "")
+    )
     OPEN_WEBUI_BASE_URL: str = "https://ai.homehub.tv/api"
 
     # Qdrant Configuration
-    QDRANT_URL: str = field(default_factory=lambda: os.getenv("QDRANT_URL", "http://localhost:6333"))
+    QDRANT_URL: str = field(
+        default_factory=lambda: os.getenv("QDRANT_URL", "http://localhost:6333")
+    )
 
     # Ollama Configuration
-    OLLAMA_EMBEDDING_MODEL: str = field(default_factory=lambda: os.getenv("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text:latest"))
+    OLLAMA_EMBEDDING_MODEL: str = field(
+        default_factory=lambda: os.getenv(
+            "OLLAMA_EMBEDDING_MODEL", "nomic-embed-text:latest"
+        )
+    )
 
     # LLM Provider selection
-    LLM_PROVIDER: str = field(default_factory=lambda: os.getenv("LLM_PROVIDER", "xai"))  # Options: openai, xai, anthropic
+    LLM_PROVIDER: str = field(
+        default_factory=lambda: os.getenv("LLM_PROVIDER", "xai")
+    )  # Options: openai, xai, anthropic
 
     # LLM Model parameters
     TEMPERATURE: float = 1.0
@@ -236,8 +270,7 @@ class APIConfig:
             from openai import OpenAI
 
             client = OpenAI(
-                api_key=self.OPEN_WEBUI_API_KEY,
-                base_url=self.OPEN_WEBUI_BASE_URL
+                api_key=self.OPEN_WEBUI_API_KEY, base_url=self.OPEN_WEBUI_BASE_URL
             )
 
             # Test connection and get available models
@@ -255,10 +288,14 @@ class APIConfig:
             return client, selected_model
 
         except ImportError:
-            raise ImportError("OpenAI package not installed. Install with: pip install openai")
+            raise ImportError(
+                "OpenAI package not installed. Install with: pip install openai"
+            )
         except Exception as e:
             if "401" in str(e):
-                raise ValueError("Authentication failed. Check OPEN_WEBUI_API_KEY in your .env file")
+                raise ValueError(
+                    "Authentication failed. Check OPEN_WEBUI_API_KEY in your .env file"
+                )
             raise
 
     def create_anthropic_client(self):
@@ -270,10 +307,14 @@ class APIConfig:
             return client, self.ANTHROPIC_MODEL
 
         except ImportError:
-            raise ImportError("Anthropic package not installed. Install with: pip install anthropic")
+            raise ImportError(
+                "Anthropic package not installed. Install with: pip install anthropic"
+            )
         except Exception as e:
             if "401" in str(e) or "invalid" in str(e).lower():
-                raise ValueError("Authentication failed. Check ANTHROPIC_API_KEY in your .env file")
+                raise ValueError(
+                    "Authentication failed. Check ANTHROPIC_API_KEY in your .env file"
+                )
             raise
 
     def create_openai_client_async(self):
@@ -285,10 +326,14 @@ class APIConfig:
             return client, self.OPENAI_MODEL
 
         except ImportError:
-            raise ImportError("OpenAI package not installed. Install with: pip install openai")
+            raise ImportError(
+                "OpenAI package not installed. Install with: pip install openai"
+            )
         except Exception as e:
             if "401" in str(e) or "invalid" in str(e).lower():
-                raise ValueError("Authentication failed. Check ANTHROPIC_API_KEY in your .env file")
+                raise ValueError(
+                    "Authentication failed. Check ANTHROPIC_API_KEY in your .env file"
+                )
             raise
 
     def create_qdrant_client(self):
@@ -296,7 +341,11 @@ class APIConfig:
         try:
             from qdrant_client import QdrantClient
 
-            url_parts = self.QDRANT_URL.replace("http://", "").replace("https://", "").split(":")
+            url_parts = (
+                self.QDRANT_URL.replace("http://", "")
+                .replace("https://", "")
+                .split(":")
+            )
             host = url_parts[0]
             port = int(url_parts[1]) if len(url_parts) > 1 else 6333
 
@@ -304,7 +353,9 @@ class APIConfig:
             return client
 
         except ImportError:
-            raise ImportError("qdrant-client package not installed. Install with: pip install qdrant-client")
+            raise ImportError(
+                "qdrant-client package not installed. Install with: pip install qdrant-client"
+            )
         except Exception as e:
             raise ValueError(f"Failed to connect to Qdrant at {self.QDRANT_URL}: {e}")
 
@@ -313,17 +364,18 @@ class APIConfig:
         try:
             from openai import AsyncOpenAI
 
-            client = AsyncOpenAI(
-                api_key=self.XAI_API_KEY,
-                base_url=self.XAI_BASE_URL
-            )
+            client = AsyncOpenAI(api_key=self.XAI_API_KEY, base_url=self.XAI_BASE_URL)
             return client, self.XAI_MODEL
 
         except ImportError:
-            raise ImportError("OpenAI package not installed. Install with: pip install openai")
+            raise ImportError(
+                "OpenAI package not installed. Install with: pip install openai"
+            )
         except Exception as e:
             if "401" in str(e) or "invalid" in str(e).lower():
-                raise ValueError("Authentication failed. Check XAI_API_KEY in your .env file")
+                raise ValueError(
+                    "Authentication failed. Check XAI_API_KEY in your .env file"
+                )
             raise
 
     def create_anthropic_client_async(self):
@@ -335,10 +387,14 @@ class APIConfig:
             return client, self.ANTHROPIC_MODEL
 
         except ImportError:
-            raise ImportError("Anthropic package not installed. Install with: pip install anthropic")
+            raise ImportError(
+                "Anthropic package not installed. Install with: pip install anthropic"
+            )
         except Exception as e:
             if "401" in str(e) or "invalid" in str(e).lower():
-                raise ValueError("Authentication failed. Check ANTHROPIC_API_KEY in your .env file")
+                raise ValueError(
+                    "Authentication failed. Check ANTHROPIC_API_KEY in your .env file"
+                )
             raise
 
 
@@ -362,25 +418,19 @@ class PathConfig:
 
         paths = {
             # Private datasets and collected information
-            'DATA_DIR': "data",
-
+            "DATA_DIR": "data",
             # Public results of processing
-            'OUTPUT_DIR': "Existential Layer/output",
-
+            "OUTPUT_DIR": "Existential Layer/output",
             # Reusable prompt components
-            'PROMPTS_DIR': "Existential Layer/prompts",
-
+            "PROMPTS_DIR": "Existential Layer/prompts",
             # Individual prompt components
-            'PROMPT_PARTS_DIR': "Existential Layer/prompts/parts",
-
+            "PROMPT_PARTS_DIR": "Existential Layer/prompts/parts",
             # The actual system prompt used
-            'ASSISTANT_PROMPTS_DIR': "Existential Layer/prompts/parts/assistant",
-
+            "ASSISTANT_PROMPTS_DIR": "Existential Layer/prompts/parts/assistant",
             # How to use external tools
-            'TOOLS_PROMPTS_DIR': "Existential Layer/prompts/parts/tools",
-
+            "TOOLS_PROMPTS_DIR": "Existential Layer/prompts/parts/tools",
             # User interview questions
-            'QUESTIONS_CSV': "questions.csv",
+            "QUESTIONS_CSV": "questions.csv",
         }
 
         # Build all paths automatically
@@ -403,7 +453,7 @@ class PathConfig:
         directories = [
             getattr(self, attr_name)
             for attr_name in dir(self)
-            if attr_name.endswith('_DIR') and not attr_name.startswith('_')
+            if attr_name.endswith("_DIR") and not attr_name.startswith("_")
         ]
         for directory in directories:
             directory.mkdir(parents=True, exist_ok=True)
@@ -412,44 +462,62 @@ class PathConfig:
 @dataclass
 class CSVConfig:
     """CSV parsing and processing configuration."""
+
     DELIMITER: str = ","
     QUOTECHAR: str = '"'
-    FIELDNAMES: List[str] = field(default_factory=lambda: [
-        "Category", "Goal", "Element", "Question 1", "Question 2", "Question 3",
-        "Human_Answer 1", "Human_Answer 2", "Human_Answer 3",
-        "AI_Answer 1", "AI_Answer 2", "AI_Answer 3", "Incorporation_Instruction"
-    ])
-    ANSWER_COLUMNS: List[str] = field(default_factory=lambda: [
-        "AI_Answer 1", "AI_Answer 2", "AI_Answer 3"
-    ])
-    QUESTION_COLUMNS: List[str] = field(default_factory=lambda: [
-        "Question 1", "Question 2", "Question 3"
-    ])
-    HUMAN_ANSWER_COLUMNS: List[str] = field(default_factory=lambda: [
-        "Human_Answer 1", "Human_Answer 2", "Human_Answer 3"
-    ])
-    INCORPORATION_COLUMNS: List[str] = field(default_factory=lambda: [
-        "Incorporation_Instruction"
-    ])
+    FIELDNAMES: List[str] = field(
+        default_factory=lambda: [
+            "Category",
+            "Goal",
+            "Element",
+            "Question 1",
+            "Question 2",
+            "Question 3",
+            "Human_Answer 1",
+            "Human_Answer 2",
+            "Human_Answer 3",
+            "AI_Answer 1",
+            "AI_Answer 2",
+            "AI_Answer 3",
+            "Incorporation_Instruction",
+        ]
+    )
+    ANSWER_COLUMNS: List[str] = field(
+        default_factory=lambda: ["AI_Answer 1", "AI_Answer 2", "AI_Answer 3"]
+    )
+    QUESTION_COLUMNS: List[str] = field(
+        default_factory=lambda: ["Question 1", "Question 2", "Question 3"]
+    )
+    HUMAN_ANSWER_COLUMNS: List[str] = field(
+        default_factory=lambda: ["Human_Answer 1", "Human_Answer 2", "Human_Answer 3"]
+    )
+    INCORPORATION_COLUMNS: List[str] = field(
+        default_factory=lambda: ["Incorporation_Instruction"]
+    )
     # Columns used to create category keys for matching questions to answers
-    CATEGORY_KEY_COLUMNS: List[str] = field(default_factory=lambda: [
-        "Category", "Goal", "Element"
-    ])
+    CATEGORY_KEY_COLUMNS: List[str] = field(
+        default_factory=lambda: ["Category", "Goal", "Element"]
+    )
 
 
 @dataclass
 class RedactionConfig:
     """Sensitive data redaction configuration."""
-    SENSITIVE_PATTERNS: List[str] = field(default_factory=lambda: [
-        # Names (common patterns)
-        r'\b[A-Z][a-z]+\s+[A-Z][a-z]+\b',  # Full names
-    ])
+
+    SENSITIVE_PATTERNS: List[str] = field(
+        default_factory=lambda: [
+            # Names (common patterns)
+            r"\b[A-Z][a-z]+\s+[A-Z][a-z]+\b",  # Full names
+        ]
+    )
 
     def get_redaction_function(self):
         """Return a redaction function configured with the patterns."""
         import re
 
-        def redact_sensitive_data(text: str, custom_patterns: Optional[List[str]] = None) -> str:
+        def redact_sensitive_data(
+            text: str, custom_patterns: Optional[List[str]] = None
+        ) -> str:
             """
             Redact sensitive information from text using configured patterns.
 
@@ -463,7 +531,7 @@ class RedactionConfig:
 
             redacted_text = text
             for pattern in patterns:
-                redacted_text = re.sub(pattern, '[REDACTED]', redacted_text)
+                redacted_text = re.sub(pattern, "[REDACTED]", redacted_text)
 
             return redacted_text
 
@@ -473,6 +541,7 @@ class RedactionConfig:
 @dataclass
 class PromptsConfig:
     """All system prompts and LLM prompts used across scripts."""
+
     # Use the constants defined at the top of the file
     initial_template: str = INITIAL_TEMPLATE
     refine_template: str = REFINE_TEMPLATE
@@ -480,9 +549,11 @@ class PromptsConfig:
     songbird_system_prompt: str = SONGBIRD_SYSTEM_PROMPT
     incorporation_prompt: str = INCORPORATION_SYSTEM_PROMPT
 
+
 @dataclass
 class OutputConfig:
     """Output file naming and formatting configuration."""
+
     # Output file naming patterns
     SONGBIRD_OUTPUT_PATTERN: str = "questions_with_answers_songbird_{timestamp}.csv"
     HUMAN_INTERVIEW_PATTERN: str = "human_interview_{timestamp}.csv"
@@ -498,6 +569,7 @@ class OutputConfig:
 @dataclass
 class Config:
     """Main configuration class containing all settings."""
+
     api: APIConfig = field(default_factory=APIConfig)
     paths: PathConfig = field(default_factory=PathConfig)
     csv: CSVConfig = field(default_factory=CSVConfig)
@@ -516,15 +588,23 @@ class Config:
         # Check API keys based on selected provider
         if self.api.LLM_PROVIDER == "openai":
             if not self.api.OPENAI_API_KEY:
-                issues.append("OPENAI_API_KEY not found in environment (required for LLM_PROVIDER=openai)")
+                issues.append(
+                    "OPENAI_API_KEY not found in environment (required for LLM_PROVIDER=openai)"
+                )
         elif self.api.LLM_PROVIDER == "xai":
             if not self.api.XAI_API_KEY:
-                issues.append("XAI_API_KEY not found in environment (required for LLM_PROVIDER=xai)")
+                issues.append(
+                    "XAI_API_KEY not found in environment (required for LLM_PROVIDER=xai)"
+                )
         elif self.api.LLM_PROVIDER == "anthropic":
             if not self.api.ANTHROPIC_API_KEY:
-                issues.append("ANTHROPIC_API_KEY not found in environment (required for LLM_PROVIDER=anthropic)")
+                issues.append(
+                    "ANTHROPIC_API_KEY not found in environment (required for LLM_PROVIDER=anthropic)"
+                )
         else:
-            issues.append(f"Invalid LLM_PROVIDER '{self.api.LLM_PROVIDER}'. Must be one of: openai, xai, anthropic")
+            issues.append(
+                f"Invalid LLM_PROVIDER '{self.api.LLM_PROVIDER}'. Must be one of: openai, xai, anthropic"
+            )
 
         if not self.api.OPEN_WEBUI_API_KEY:
             issues.append("OPEN_WEBUI_API_KEY not found in environment")
@@ -539,16 +619,19 @@ class Config:
 # Create global config instance
 config = Config()
 
+
 # Convenience functions for common operations
 def get_redaction_function():
     """Get configured redaction function."""
     return config.redaction.get_redaction_function()
+
 
 def get_data_files(pattern: str) -> List[Path]:
     """Get list of data files matching pattern."""
     if not config.paths.DATA_DIR.exists():
         return []
     return list(config.paths.DATA_DIR.glob(pattern))
+
 
 def get_most_recent_file(pattern: str) -> Path:
     """Get most recent file matching pattern."""
@@ -557,26 +640,27 @@ def get_most_recent_file(pattern: str) -> Path:
         raise FileNotFoundError(f"No files found matching pattern: {pattern}")
     return max(files, key=lambda f: f.stat().st_mtime)
 
+
 def clean_markdown(text: str) -> str:
     """Clean markdown formatting from text, converting to plain text."""
     import re
 
     # Remove header markers (# ## ###)
-    text = re.sub(r'^#+\s*', '', text, flags=re.MULTILINE)
+    text = re.sub(r"^#+\s*", "", text, flags=re.MULTILINE)
 
     # Remove bold/italic (**text**, *text*)
-    text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)
-    text = re.sub(r'\*(.*?)\*', r'\1', text)
+    text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
+    text = re.sub(r"\*(.*?)\*", r"\1", text)
 
     # Remove list markers (-, *, +, numbered)
-    text = re.sub(r'^[-*+]\s*', '', text, flags=re.MULTILINE)
-    text = re.sub(r'^\d+\.\s*', '', text, flags=re.MULTILINE)
+    text = re.sub(r"^[-*+]\s*", "", text, flags=re.MULTILINE)
+    text = re.sub(r"^\d+\.\s*", "", text, flags=re.MULTILINE)
 
     # Replace newlines with spaces
-    text = text.replace('\n', ' ')
+    text = text.replace("\n", " ")
 
     # Collapse multiple spaces/tabs
-    text = re.sub(r'\s+', ' ', text)
+    text = re.sub(r"\s+", " ", text)
 
     return text.strip()
 
@@ -585,28 +669,33 @@ def accumulate_streaming_response(response) -> str:
     """Accumulate streaming response from OpenAI client."""
     full_content = ""
     for chunk in response:
-        if hasattr(chunk, 'choices') and chunk.choices:
-            if hasattr(chunk.choices[0], 'delta') and chunk.choices[0].delta:
-                if hasattr(chunk.choices[0].delta, 'content') and chunk.choices[0].delta.content:
+        if hasattr(chunk, "choices") and chunk.choices:
+            if hasattr(chunk.choices[0], "delta") and chunk.choices[0].delta:
+                if (
+                    hasattr(chunk.choices[0].delta, "content")
+                    and chunk.choices[0].delta.content
+                ):
                     full_content += chunk.choices[0].delta.content
     return full_content.strip()
+
 
 def get_clean_markdown_function():
     """Get the markdown cleaning function."""
     return clean_markdown
 
+
 # Export key functions and classes for easy importing
 __all__ = [
-    'config',
-    'get_redaction_function',
-    'get_clean_markdown_function',
-    'get_data_files',
-    'get_most_recent_file',
-    'Config',
-    'APIConfig',
-    'PathConfig',
-    'CSVConfig',
-    'RedactionConfig',
-    'PromptsConfig',
-    'OutputConfig'
+    "config",
+    "get_redaction_function",
+    "get_clean_markdown_function",
+    "get_data_files",
+    "get_most_recent_file",
+    "Config",
+    "APIConfig",
+    "PathConfig",
+    "CSVConfig",
+    "RedactionConfig",
+    "PromptsConfig",
+    "OutputConfig",
 ]
