@@ -18,6 +18,7 @@ Usage:
 
 import os
 import csv
+import glob
 import pandas as pd
 import streamlit as st
 from datetime import datetime
@@ -68,6 +69,16 @@ def save_answers_to_csv(questions_df: pd.DataFrame, answers: dict, output_file: 
     )
 
 
+def get_answers_dict(questions_list, session_answers):
+    answers_dict = {}
+    for q in questions_list:
+        cat_key = f"{q['category']}|{q['goal']}|{q['element']}"
+        if cat_key not in answers_dict:
+            answers_dict[cat_key] = {}
+        answers_dict[cat_key][f'Answer {q["question_num"]}'] = session_answers.get(q["key"], "")
+    return answers_dict
+
+
 def main():
     st.set_page_config(
         page_title="Existential Interview", page_icon="🎯", layout="centered"
@@ -100,83 +111,60 @@ def main():
             )
 
     total_questions = len(questions_list)
-    current_q = questions_list[st.session_state.current_index]
-    answer_key = current_q["key"]
 
-    if answer_key not in st.session_state.answers:
-        st.session_state.answers[answer_key] = ""
+    if st.session_state.current_index >= total_questions:
+        # Completed
+        st.success("🎉 Interview completed and saved!")
+        # Use the last saved file, assume it's the latest timestamp
+        # For simplicity, list files and take the latest
+        import glob
+        files = glob.glob(str(config.paths.DATA_DIR / "human_interview_*.csv"))
+        if files:
+            latest_file = max(files, key=os.path.getmtime)
+            output_file = Path(latest_file)
+            total_answers = sum(1 for ans in st.session_state.answers.values() if ans.strip())
+            st.write(f"📁 File saved to: `{output_file}`")
+            st.write(f"📊 Total answers recorded: {total_answers}")
+            with open(output_file, "rb") as f:
+                st.download_button(
+                    label="📥 Download Results",
+                    data=f,
+                    file_name=output_file.name,
+                    mime="text/csv",
+                )
+    else:
+        current_q = questions_list[st.session_state.current_index]
+        answer_key = current_q["key"]
 
-    # Progress
-    st.progress((st.session_state.current_index + 1) / total_questions)
-    st.caption(f"Question {st.session_state.current_index + 1} of {total_questions}")
+        if answer_key not in st.session_state.answers:
+            st.session_state.answers[answer_key] = ""
 
-    # Display current question
-    st.markdown(f"### {current_q['question']}")
+        # Progress
+        st.progress((st.session_state.current_index + 1) / total_questions)
+        st.caption(f"Question {st.session_state.current_index + 1} of {total_questions}")
 
-    # Answer input
-    answer = st.text_area(
-        "Your answer:",
-        value=st.session_state.answers[answer_key],
-        height=200,
-        placeholder="Type your response here...",
-    )
-    st.session_state.answers[answer_key] = answer
+        # Display current question
+        st.markdown(f"### {current_q['question']}")
 
-    # Navigation buttons
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button(
-            "⬅️ Previous",
-            disabled=st.session_state.current_index == 0,
-            use_container_width=True,
-        ):
-            st.session_state.current_index -= 1
+        with st.form(key=f"question_form_{st.session_state.current_index}"):
+            answer = st.text_area(
+                "Your answer:",
+                value=st.session_state.answers[answer_key],
+                height=200,
+                placeholder="Type your response here...",
+            )
+            submitted = st.form_submit_button("Submit Answer", use_container_width=True)
+
+        if submitted:
+            st.session_state.answers[answer_key] = answer
+            answers_dict = get_answers_dict(questions_list, st.session_state.answers)
+            timestamp = datetime.now().strftime(config.output.TIMESTAMP_FORMAT)
+            output_filename = config.output.HUMAN_INTERVIEW_PATTERN.format(timestamp=timestamp)
+            output_file = config.paths.DATA_DIR / output_filename
+            config.paths.DATA_DIR.mkdir(parents=True, exist_ok=True)
+            save_answers_to_csv(questions_df, answers_dict, output_file)
+            st.session_state.current_index += 1
             st.rerun()
-    with col2:
-        if st.session_state.current_index < total_questions - 1:
-            if st.button("Next ➡️", use_container_width=True):
-                st.session_state.current_index += 1
-                st.rerun()
-        else:
-            if st.button(
-                "💾 Submit Interview", type="primary", use_container_width=True
-            ):
-                # Convert answers back to dict format
-                answers_dict = {}
-                for q in questions_list:
-                    cat_key = f"{q['category']}|{q['goal']}|{q['element']}"
-                    if cat_key not in answers_dict:
-                        answers_dict[cat_key] = {}
-                    answers_dict[cat_key][f'Answer {q["question_num"]}'] = (
-                        st.session_state.answers[q["key"]]
-                    )
-
-                # Save
-                timestamp = datetime.now().strftime(config.output.TIMESTAMP_FORMAT)
-                output_filename = config.output.HUMAN_INTERVIEW_PATTERN.format(
-                    timestamp=timestamp
-                )
-                output_file = config.paths.DATA_DIR / output_filename
-                config.paths.DATA_DIR.mkdir(parents=True, exist_ok=True)
-                save_answers_to_csv(questions_df, answers_dict, output_file)
-
-                # Count answers
-                total_answers = sum(
-                    1 for ans in st.session_state.answers.values() if ans.strip()
-                )
-
-                st.success("🎉 Interview saved successfully!")
-                st.write(f"📁 File saved to: `{output_file}`")
-                st.write(f"📊 Total answers recorded: {total_answers}")
-
-                # Download button
-                with open(output_file, "rb") as f:
-                    st.download_button(
-                        label="📥 Download Results",
-                        data=f,
-                        file_name=output_filename,
-                        mime="text/csv",
-                    )
 
 
 if __name__ == "__main__":
